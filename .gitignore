@@ -1,0 +1,18 @@
+# 환경변수 (API 키, DB 비밀번호 - 절대 커밋 금지)
+.env
+
+# 파이썬
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 에디터
+.vscode/

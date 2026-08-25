@@ -6,10 +6,10 @@
 
 ```
 ott_recommend/
-├── data_collection/          # TMDB API 데이터 수집 (AI 도구 활용)
+├── data_collection/          # TMDB API 데이터 수집
 │   ├── collect_netflix_kr_full.py
 │   └── build_full_erd_data.py
-├── db/                       # PostgreSQL/pgvector 구축 (강의 자료 패턴 기반)
+├── db/                       # PostgreSQL/pgvector 구축
 │   ├── schema.sql
 │   ├── load_to_postgres.py
 │   ├── generate_embeddings.py
@@ -30,8 +30,8 @@ ott_recommend/
 
 ## 코드 출처 안내
 
-- **`data_collection/`**: TMDB API로 넷플릭스 한국 콘텐츠를 수집하는 부분. 강의 범위(PostgreSQL/NoSQL/pgvector/Streamlit) 밖의 작업이라 AI 도구의 도움을 받아 작성함.
-- **`db/`**: PostgreSQL 연결, pgvector 임베딩 저장, HNSW 인덱스 생성 부분. 강의 pgvector 실습 노트북의 패턴(`load_dotenv`, `DB_CONFIG`, `register_vector`, `embed_many`)을 그대로 따라 작성함.
+- **`data_collection/`**: TMDB API로 넷플릭스 한국 콘텐츠를 수집하는 부분. 강의 범위(PostgreSQL/NoSQL/pgvector/Streamlit) 밖의 작업이라 AI 도움을 받아 작성함.
+- **`db/`**: PostgreSQL 연결, pgvector 임베딩 저장, HNSW 인덱스 생성 부분. 강의 pgvector 실습 노트북의 패턴(`load_dotenv`, `DB_CONFIG`, `register_vector`, `embed_many`)을 기반으로 작성함.
 
 ## 실행 순서
 

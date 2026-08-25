@@ -1,11 +1,11 @@
 import os
-
+import re
 import psycopg
 from psycopg import sql
 from dotenv import load_dotenv
 from pgvector.psycopg import register_vector
 
-import re
+from openai import OpenAI
 
 load_dotenv()
 
@@ -490,8 +490,8 @@ def run(sql_text, params=None):
 
 # """,('US','Action','movie'))
 
-#-----------------------------333333-------------------#
-#-Python 내부에서 판단하여 추출할 수 있게 하는 함수 정의-#
+#----------------------------------0---------------#
+#--- filters를 가지고 sql을 통해 db 조회하는 함수 ---#
 def search_contents(filters):
     conditions=[]
     params=[]
@@ -544,7 +544,7 @@ def search_contents(filters):
     # 한 줄로 합쳐짐.
 
     sql=f'''
-        select c.title
+        select c.content_id, c.title, c.content_type, c.runtime_minutes, c.overview
         from content c
         {join_sql}
         {where_sql}
@@ -559,6 +559,14 @@ def search_contents(filters):
         cur.execute(sql,params)
         rows=cur.fetchall()
         return rows
+
+person_names = [
+        "김민수",
+        "박지훈",
+        "이서준",
+        "최유진",
+        "이지영"
+    ]
 
 # input 값 매칭 함수
 def extract_filters(user_query):
@@ -612,17 +620,213 @@ def extract_filters(user_query):
 
     # person 관련
 
+    for person_name in person_names:
+        if person_name in user_query:
+            filters["person_name"] = person_name
+            break
+
     if filters['person_name'] is not None:
         filters['role_type']='actor'
 
+        if '감독' in user_query:
+            filters['role_type']='director'
+
     return filters
 
+# llm 연결
 
-# user_query = "60분 이하 한국 액션 영화 추천해줘"
+client=OpenAI()
 
-# filters = extract_filters(user_query)
+def create_embedding(text):
+    response=client.embeddings.create(
+        model=embedding_model,
+        input=text,
+        dimensions=embedding_dimensions
+    )
+    return response.data[0].embedding
 
-# print(filters)
-print(extract_filters("60분 이하 한국 액션 영화 추천해줘"))
+# db에서 정보 가지고 오기
+
+with conn.cursor() as cur:
+    cur.execute("""
+        SELECT content_id, embedding_text
+        FROM content_embedding
+    """)
+
+    rows = cur.fetchall()
+
+for content_id, embedding_text in rows:
+    embedding = create_embedding(embedding_text)
+
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE content_embedding
+            SET embedding = %s
+            WHERE content_id = %s
+        """, (embedding, content_id))
+
+conn.commit()
+
+# sql 후보 제한 + pgvector 의미 정렬
+def search_by_embedding(candidate_ids, semantic_query):
+    query_embedding = create_embedding(semantic_query)
+
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT
+                c.content_id,
+                c.title,
+                c.content_type,
+                c.runtime_minutes,
+                STRING_AGG(g.genre_name, ', ') AS genres,
+                c.overview,
+                ce.embedding <=> %s::vector AS distance
+
+            FROM content_embedding ce
+
+            JOIN content c
+                ON ce.content_id = c.content_id
+
+            LEFT JOIN content_genre cg
+                ON c.content_id = cg.content_id
+
+            LEFT JOIN genre g
+                ON cg.genre_id = g.genre_id
+
+            WHERE c.content_id = ANY(%s::bigint[])
+            AND ce.embedding IS NOT NULL
+
+            GROUP BY
+                c.content_id,
+                c.title,
+                c.content_type,
+                c.runtime_minutes,
+                c.overview,
+                ce.embedding
+
+            ORDER BY distance ASC
+
+        """, (query_embedding, candidate_ids))
+
+        vector_results = cur.fetchall()
+
+    return vector_results
+
+def extract_semantic_query(user_query):
+    semantic_query = user_query
+
+    # SQL에서 처리할 명확한 키워드 제거
+    explicit_keywords = [
+        "영화",
+        "드라마",
+        "예능",
+        "한국",
+        "미국",
+        "일본",
+        "액션",
+        "코미디",
+        "스릴러",
+        "SF"
+    ]
+
+    for keyword in explicit_keywords:
+        semantic_query = semantic_query.replace(keyword, "")
+
+    for person_name in person_names:
+        semantic_query = semantic_query.replace(person_name, "")
+
+    # 러닝타임 조건 제거
+    semantic_query = re.sub(r"\d+\s*분\s*이하", "", semantic_query)
+    semantic_query = re.sub(r"\d+\s*시간\s*이하", "", semantic_query)
+
+    # 추천 문장에서 불필요한 표현 제거
+    semantic_query = semantic_query.replace("중에서", "")
+    semantic_query = semantic_query.replace("추천해줘", "")
+
+    # 역할 표현 제거
+    semantic_query = semantic_query.replace("배우가", "")
+    semantic_query = semantic_query.replace("배우", "")
+    semantic_query = semantic_query.replace("감독이", "")
+    semantic_query = semantic_query.replace("감독", "")
+    semantic_query = semantic_query.replace("출연한", "")
+    semantic_query = semantic_query.replace("출연", "")
+    semantic_query = semantic_query.replace("나온", "")
+
+    semantic_query = re.sub(r"\s+", " ", semantic_query)
+
+    return semantic_query.strip()
+
+
+# 추천
+def recommend(user_query, top_n=3):
+
+    filters = extract_filters(user_query)
+
+    results = search_contents(filters)
+
+    candidate_ids = [row[0] for row in results]
+
+    if not candidate_ids:
+        print("조건에 맞는 콘텐츠가 없습니다.")
+        return []
+
+    semantic_query = extract_semantic_query(user_query)
+
+    if not semantic_query:
+        final_results = get_content_details(candidate_ids)
+        return final_results[:top_n]
+
+    vector_results = search_by_embedding(
+        candidate_ids,
+        semantic_query
+    )
+
+    return vector_results[:top_n]
+
+def get_content_details(candidate_ids):
+
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT
+                c.content_id,
+                c.title,
+                c.content_type,
+                c.runtime_minutes,
+                STRING_AGG(g.genre_name, ', ') AS genres,
+                c.overview,
+                NULL::double precision AS distance
+
+            FROM content c
+
+            LEFT JOIN content_genre cg
+                ON c.content_id = cg.content_id
+
+            LEFT JOIN genre g
+                ON cg.genre_id = g.genre_id
+
+            WHERE c.content_id = ANY(%s::bigint[])
+
+            GROUP BY
+                c.content_id,
+                c.title,
+                c.content_type,
+                c.runtime_minutes,
+                c.overview
+
+            ORDER BY c.content_id
+        """, (candidate_ids,))
+
+        detail_results = cur.fetchall()
+
+    return detail_results
+
+
+
+user_query = "편하게 볼 수 있는 거 추천해줘"
+
+results = recommend(user_query, top_n=3)
+
+for row in results:
+    print(row)
 
 conn.close()

@@ -728,6 +728,9 @@ else:
                         runtime,
                         genres,
                         overview,
+                        poster_path,
+                        vote_average,
+                        release_date,
                         distance
                     ) = row
 
@@ -762,19 +765,43 @@ else:
                         border=True
                     ):
 
-                        st.subheader(
-                            title
+                        poster_col, info_col = st.columns(
+                            [1, 3],
+                            vertical_alignment="top"
                         )
 
-                        st.caption(
-                            f"{display_type} · "
-                            f"{runtime}분 · "
-                            f"{display_genres}"
-                        )
+                        with poster_col:
+                            if poster_path:
+                                poster_url = (
+                                    "https://image.tmdb.org/t/p/w500"
+                                    + poster_path
+                                )
+                                st.image(
+                                    poster_url,
+                                    width="stretch"
+                                )
 
-                        st.write(
-                            overview
-                        )
+                        with info_col:
+
+                            rating_text = (
+                                f"⭐ {vote_average}"
+                                if vote_average else ""
+                            )
+
+                            st.subheader(
+                                title
+                            )
+
+                            st.caption(
+                                f"{display_type} · "
+                                f"{runtime}분 · "
+                                f"{display_genres}"
+                                f" · {rating_text}"
+                            )
+
+                            st.write(
+                                overview
+                            )
 
 
     # ==================================================

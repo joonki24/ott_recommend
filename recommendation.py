@@ -297,40 +297,15 @@ def extract_semantic_query(user_query, person_names):
     )
 
     # 사람 역할 관련 표현 제거
-    semantic_query = semantic_query.replace(
-        "배우가",
-        ""
+    # 어근(나오/출연/등장/연기/감독) +
+    # 조사/어미(가 없거나 하는·한·했던 등)
+    # 를 정규식 하나로 한번에 제거
+    semantic_query = re.sub(
+        r"(나오|출연|등장|연기|감독)(하는|하신|한|했던|이)?",
+        "",
+        semantic_query
     )
-
-    semantic_query = semantic_query.replace(
-        "배우",
-        ""
-    )
-
-    semantic_query = semantic_query.replace(
-        "감독이",
-        ""
-    )
-
-    semantic_query = semantic_query.replace(
-        "감독",
-        ""
-    )
-
-    semantic_query = semantic_query.replace(
-        "출연한",
-        ""
-    )
-
-    semantic_query = semantic_query.replace(
-        "출연",
-        ""
-    )
-
-    semantic_query = semantic_query.replace(
-        "나온",
-        ""
-    )
+    
 
     # 여러 공백 → 한 칸
     semantic_query = re.sub(
@@ -368,6 +343,9 @@ def search_by_embedding(
                     ', '
                 ) AS genres,
                 c.overview,
+                c.poster_path,
+                c.vote_average,
+                c.release_date,
                 ce.embedding
                     <=> %s::vector
                     AS distance
@@ -397,6 +375,9 @@ def search_by_embedding(
                 c.content_type,
                 c.runtime_minutes,
                 c.overview,
+                c.poster_path,
+                c.vote_average,
+                c.release_date,
                 ce.embedding
 
             ORDER BY distance ASC
@@ -431,6 +412,9 @@ def get_content_details(candidate_ids):
                     ', '
                 ) AS genres,
                 c.overview,
+                c.poster_path,
+                c.vote_average,
+                c.release_date,
                 NULL::double precision
                     AS distance
 
@@ -453,7 +437,10 @@ def get_content_details(candidate_ids):
                 c.title,
                 c.content_type,
                 c.runtime_minutes,
-                c.overview
+                c.overview,
+                c.poster_path,
+                c.vote_average,
+                c.release_date
 
             ORDER BY c.content_id
 

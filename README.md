@@ -23,7 +23,8 @@ ott_recommend/
 │   ├── person.csv
 │   ├── content_person_role.csv
 │   └── content_embedding.csv
-├── ERD.png
+├── images/                   # 프로젝트 이미지 모음
+│   └── ERD.png
 ├── .env.example
 └── .gitignore
 ```

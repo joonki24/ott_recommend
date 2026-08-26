@@ -5,9 +5,12 @@ from textwrap import dedent
 
 import streamlit as st
 
-from recommendation import recommend
+# 사용 모델 선택
+# open_ai 사용시는 아래 활성화
+# from recommendation import recommend 
 
-
+# gemini 사용시는 아래 활성화
+# from gemini_recommendation import recommend
 
 
 # ==================================================
@@ -70,14 +73,11 @@ def get_base64_image(image_path):
 # 프로젝트 폴더 아래에 이 파일이 있으면 첫 화면 배경으로 사용
 # 없더라도 앱은 정상 실행됨
 bg_base64 = get_base64_image(
-    "netflix_bg.png"
-)
+    "images/netflix_bg.png")
 logo_base64 = get_base64_image(
-    "netflix_logo.png"
-)
+    "images/netflix_logo.png")
 symbol_base64 = get_base64_image(
-    "netflix_symbol.png"
-)
+    "images/netflix_symbol.png")
 
 # 이미지가 있으면 이미지 배경
 if bg_base64:

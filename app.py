@@ -1,10 +1,13 @@
 import base64
+import html
 from pathlib import Path
 from textwrap import dedent
 
 import streamlit as st
 
 from recommendation import recommend
+
+
 
 
 # ==================================================
@@ -69,17 +72,29 @@ def get_base64_image(image_path):
 bg_base64 = get_base64_image(
     "netflix_bg.png"
 )
-
+logo_base64 = get_base64_image(
+    "netflix_logo.png"
+)
+symbol_base64 = get_base64_image(
+    "netflix_symbol.png"
+)
 
 # 이미지가 있으면 이미지 배경
 if bg_base64:
 
     landing_background = f"""
         linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.78) 0%,
+            rgba(0, 0, 0, 0.48) 35%,
+            rgba(0, 0, 0, 0.38) 65%,
+            rgba(0, 0, 0, 0.62) 100%
+        ),
+        linear-gradient(
             to bottom,
-            rgba(0, 0, 0, 0.45) 0%,
-            rgba(0, 0, 0, 0.35) 45%,
-            rgba(0, 0, 0, 0.80) 100%
+            rgba(0, 0, 0, 0.18) 0%,
+            rgba(0, 0, 0, 0.25) 55%,
+            rgba(0, 0, 0, 0.82) 100%
         ),
         url("data:image/png;base64,{bg_base64}")
     """
@@ -190,53 +205,22 @@ st.markdown(
 
     .landing-header {{
         display: flex;
-
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
 
-        margin-bottom: 90px;
+        min-height: 70px;
+        margin-bottom: 0;
     }}
 
     .landing-brand {{
         display: flex;
-
-        flex-direction: column;
-
-        align-items: flex-start;
-    }}
-
-    .fake-menu {{
-        display: flex;
-
-        gap: 10px;
-
         align-items: center;
     }}
 
-    .fake-language {{
-        color: #ffffff;
-
-        background: rgba(20, 20, 20, 0.75);
-
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        border-radius: 4px;
-
-        padding: 7px 14px;
-
-        font-size: 14px;
-    }}
-
-    .prototype-label {{
-        color: #ffffff;
-
-        background: #E50914;
-
-        border-radius: 4px;
-
-        padding: 8px 14px;
-
-        font-size: 13px;
-        font-weight: 700;
+    .landing-logo-image {{
+        width: 125px;
+        height: auto;
+        display: block;
     }}
 
 
@@ -245,9 +229,9 @@ st.markdown(
     ========================= */
 
     .hero-area {{
-        max-width: 840px;
+        max-width: 900px;
 
-        margin: 80px auto 28px auto;
+        margin: 8.5rem auto 3.2rem auto;
 
         text-align: center;
     }}
@@ -255,31 +239,88 @@ st.markdown(
     .hero-title {{
         color: #ffffff;
 
-        font-size: 56px;
+        font-size: 60px;
         font-weight: 900;
 
-        line-height: 1.1;
-        letter-spacing: -0.035em;
+        line-height: 1.13;
+        letter-spacing: -0.04em;
+
+        text-shadow: 0 3px 18px rgba(0, 0, 0, 0.75);
     }}
 
     .hero-subtitle {{
-        color: #ffffff;
+        color: #d7d7d7;
 
         margin-top: 24px;
 
-        font-size: 22px;
-        font-weight: 600;
+        font-size: 20px;
+        font-weight: 400;
 
         line-height: 1.5;
+
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
     }}
 
-    .hero-description {{
-        color: #e5e5e5;
 
-        margin-top: 22px;
+    /* =========================
+    LANDING SEARCH FORM
+    ========================= */
 
-        font-size: 16px;
-        line-height: 1.65;
+    [data-testid="stForm"] {{
+        max-width: 980px;
+
+        margin-left: auto;
+        margin-right: auto;
+
+        padding: 12px;
+
+        background: rgba(5, 5, 5, 0.62);
+
+        border: 1px solid rgba(255, 255, 255, 0.24) !important;
+        border-radius: 8px;
+
+        backdrop-filter: blur(3px);
+    }}
+
+    [data-testid="stForm"] .stTextInput input {{
+        min-height: 58px;
+
+        background: rgba(35, 35, 35, 0.88) !important;
+
+        color: #ffffff !important;
+
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        border-radius: 6px !important;
+
+        font-size: 16px !important;
+
+        padding-left: 18px;
+    }}
+
+    [data-testid="stForm"] .stTextInput input:focus {{
+        border-color: rgba(255, 255, 255, 0.65) !important;
+        box-shadow: none !important;
+    }}
+
+    [data-testid="stForm"] .stTextInput input::placeholder {{
+        color: #b3b3b3 !important;
+    }}
+
+    [data-testid="stFormSubmitButton"] button {{
+        min-height: 58px !important;
+
+        background: #E50914 !important;
+        color: #ffffff !important;
+
+        border: none !important;
+        border-radius: 6px !important;
+
+        font-size: 17px !important;
+        font-weight: 700 !important;
+    }}
+
+    [data-testid="stFormSubmitButton"] button:hover {{
+        background: #f6121d !important;
     }}
 
 
@@ -289,38 +330,46 @@ st.markdown(
 
     .chat-brand {{
         display: flex;
-
         align-items: center;
+        gap: 22px;
+        min-height: 52px;
+    }}
 
-        gap: 14px;
+    .chat-logo-image {{
+        width: 120px;
+        height: auto;
+        display: block;
+    }}
 
-        min-height: 48px;
+    .chat-ai-label {{
+        color: #d5d5d5;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
     }}
 
     .chat-divider {{
         height: 1px;
-
         background: #242424;
-
         margin-top: 15px;
-        margin-bottom: 18px;
+        margin-bottom: 28px;
     }}
 
 
     /* =========================
-    BUTTON
+    NEW CHAT BUTTON
     ========================= */
 
     .stButton > button {{
-        background: #E50914 !important;
+        background: transparent !important;
         color: #ffffff !important;
 
-        border: none !important;
-        border-radius: 4px !important;
+        border: 1px solid #E50914 !important;
+        border-radius: 6px !important;
 
-        font-weight: 700 !important;
+        font-weight: 600 !important;
 
-        min-height: 42px;
+        min-height: 44px;
 
         padding: 0.55rem 1rem !important;
 
@@ -328,94 +377,238 @@ st.markdown(
     }}
 
     .stButton > button:hover {{
-        background: #c11119 !important;
-
+        background: rgba(229, 9, 20, 0.12) !important;
         color: #ffffff !important;
 
-        border: none !important;
+        border-color: #ff1f2d !important;
     }}
 
 
     /* =========================
-    LANDING TEXT INPUT
+    CUSTOM CHAT
     ========================= */
 
-    .stTextInput input {{
-        background: rgba(20, 20, 20, 0.85) !important;
+    .user-row {{
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
 
-        color: #ffffff !important;
+        gap: 14px;
 
-        border: 1px solid #777777 !important;
-        border-radius: 4px !important;
-
-        min-height: 52px;
-
-        font-size: 15px !important;
+        margin: 18px 0 30px 0;
     }}
 
-    .stTextInput input:focus {{
-        border-color: #ffffff !important;
+    .user-bubble {{
+        max-width: 620px;
 
-        box-shadow: none !important;
+        padding: 16px 22px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #292929,
+                #1b1b1b
+            );
+
+        color: #ffffff;
+
+        border-radius: 16px 16px 4px 16px;
+
+        font-size: 16px;
+        line-height: 1.6;
+
+        border: 1px solid #303030;
     }}
 
-    .stTextInput input::placeholder {{
-        color: #B3B3B3 !important;
+    .user-avatar {{
+        width: 48px;
+        height: 48px;
+
+        flex: 0 0 48px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: #292929;
+        border: 1px solid #3a3a3a;
+    }}
+
+    .user-avatar svg {{
+        width: 25px;
+        height: 25px;
+
+        fill: #b3b3b3;
+    }}
+
+
+    .assistant-row {{
+        display: flex;
+        align-items: flex-start;
+
+        gap: 16px;
+
+        margin: 10px 0 22px 0;
+    }}
+
+    .assistant-avatar {{
+        width: 52px;
+        height: 52px;
+
+        flex: 0 0 52px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        overflow: hidden;
+
+        background: #080808;
+
+        border: 1px solid #3c3c3c;
+        border-radius: 50%;
+    }}
+
+    .assistant-avatar img {{
+        width: 32px;
+        height: 42px;
+
+        object-fit: contain;
+    }}
+
+    .assistant-bubble {{
+        max-width: 650px;
+
+        padding: 16px 22px;
+
+        background:
+            linear-gradient(
+                135deg,
+                #242424,
+                #181818
+            );
+
+        color: #ffffff;
+
+        border: 1px solid #2e2e2e;
+        border-radius: 4px 16px 16px 16px;
+
+        font-size: 16px;
+        line-height: 1.6;
     }}
 
 
     /* =========================
-    CHAT MESSAGE
+    RECOMMENDATION GRID
     ========================= */
 
-    [data-testid="stChatMessage"] {{
-        background: transparent !important;
+    .recommendation-card {{
+        height: 100%;
 
-        padding-top: 1.1rem !important;
-        padding-bottom: 1.1rem !important;
+        overflow: hidden;
+
+        background:
+            linear-gradient(
+                to bottom,
+                #171717,
+                #101010
+            );
+
+        border: 1px solid #333333;
+        border-radius: 6px;
     }}
 
+    .recommendation-poster {{
+        width: 100%;
 
-    /* =========================
-    RECOMMENDATION CARD
-    ========================= */
+        aspect-ratio: 2 / 3;
 
-    [data-testid="stVerticalBlockBorderWrapper"] {{
-        background: #141414 !important;
+        display: block;
 
-        border: 1px solid #2a2a2a !important;
-        border-radius: 4px !important;
+        object-fit: cover;
 
-        box-shadow: none !important;
-
-        margin-bottom: 10px !important;
+        background: #202020;
     }}
 
-    .rec-title {{
-        color: #ffffff !important;
-
-        font-size: 20px !important;
-        font-weight: 700 !important;
-
-        margin-bottom: 4px !important;
+    .recommendation-info {{
+        padding: 17px 17px 20px 17px;
     }}
 
-    .rec-overview {{
-        color: #e2e2e2 !important;
+    .recommendation-title-row {{
+        display: flex;
+        align-items: center;
 
-        font-size: 14px !important;
-        line-height: 1.6 !important;
+        gap: 10px;
+
+        margin-bottom: 9px;
     }}
 
+    .rank-badge {{
+        min-width: 28px;
+        height: 28px;
 
-    /* =========================
-    CAPTION / METADATA
-    ========================= */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
 
-    [data-testid="stCaptionContainer"] {{
-        color: #B3B3B3 !important;
+        color: #ffffff;
 
-        font-size: 12px !important;
+        border: 1px solid #E50914;
+        border-radius: 4px;
+
+        font-size: 13px;
+        font-weight: 700;
+    }}
+
+    .recommendation-title {{
+        color: #ffffff;
+
+        font-size: 19px;
+        font-weight: 700;
+
+        line-height: 1.35;
+    }}
+
+    .recommendation-meta {{
+        color: #b3b3b3;
+
+        margin-bottom: 10px;
+
+        font-size: 13px;
+        line-height: 1.55;
+    }}
+
+    .recommendation-rating {{
+        color: #e5e5e5;
+
+        margin-bottom: 11px;
+
+        font-size: 14px;
+    }}
+
+    .rating-star {{
+        color: #E50914;
+
+        margin-right: 4px;
+    }}
+
+    .recommendation-overview {{
+        color: #cfcfcf;
+
+        font-size: 13px;
+        line-height: 1.6;
+    }}
+
+    .tmdb-note {{
+        color: #777777;
+
+        margin: 20px 0 15px 0;
+
+        text-align: center;
+
+        font-size: 12px;
     }}
 
 
@@ -426,14 +619,14 @@ st.markdown(
     [data-testid="stChatInput"] {{
         background: #141414 !important;
 
-        border: 1px solid #555555 !important;
-        border-radius: 4px !important;
+        border: 1px solid #444444 !important;
+        border-radius: 7px !important;
 
         box-shadow: none !important;
     }}
 
     [data-testid="stChatInput"]:focus-within {{
-        border-color: #ffffff !important;
+        border-color: #777777 !important;
     }}
 
     [data-testid="stChatInput"] textarea {{
@@ -441,7 +634,18 @@ st.markdown(
     }}
 
     [data-testid="stChatInput"] textarea::placeholder {{
-        color: #B3B3B3 !important;
+        color: #8c8c8c !important;
+    }}
+
+    [data-testid="stChatInput"] button {{
+        background: #E50914 !important;
+        color: #ffffff !important;
+
+        border-radius: 5px !important;
+    }}
+
+    [data-testid="stChatInput"] button:hover {{
+        background: #f6121d !important;
     }}
 
 
@@ -473,24 +677,20 @@ st.markdown(
             padding-right: 1.2rem;
         }}
 
-        .netflix-logo {{
-            font-size: 32px;
+        .landing-logo-image {{
+            width: 95px;
         }}
 
         .hero-area {{
-            margin-top: 50px;
+            margin-top: 6rem;
         }}
 
         .hero-title {{
-            font-size: 38px;
+            font-size: 40px;
         }}
 
         .hero-subtitle {{
-            font-size: 18px;
-        }}
-
-        .fake-language {{
-            display: none;
+            font-size: 17px;
         }}
 
     }}
@@ -575,36 +775,59 @@ if is_new_chat:
     # 화면 전체에 랜딩 배경 적용
     st.html('<div class="landing-background"></div>')
 
-    # Netflix 스타일 상단
-    st.html("""
-    <div class="landing-header">
-        <div class="landing-brand">
-            <div class="netflix-logo">NETFLIX</div>
-            <div class="ai-label">AI RECOMMENDATION</div>
+    # 공식 Netflix 로고
+    if logo_base64:
+
+        logo_html = f"""
+            <img
+                class="landing-logo-image"
+                src="data:image/png;base64,{logo_base64}"
+                alt="Netflix"
+            >
+        """
+
+    else:
+
+        logo_html = """
+            <div style="
+                color:#E50914;
+                font-size:28px;
+                font-weight:900;
+            ">
+                NETFLIX
+            </div>
+        """
+
+
+    # 상단 로고
+    st.html(
+        f"""
+        <div class="landing-header">
+            <div class="landing-brand">
+                {logo_html}
+            </div>
         </div>
-        <div class="fake-menu">
-            <div class="fake-language">한국어</div>
-            <div class="prototype-label">AI 추천</div>
-        </div>
-    </div>
-    """)
+        """
+    )
+
 
     # 중앙 Hero
-    st.html("""
-    <div class="hero-area">
-        <div class="hero-title">
-            오늘은 어떤 이야기에<br>
-            빠져보고 싶으세요?
+    st.html(
+        """
+        <div class="hero-area">
+
+            <div class="hero-title">
+                오늘은 어떤 이야기에<br>
+                빠져보고 싶으세요?
+            </div>
+
+            <div class="hero-subtitle">
+                영화, 드라마, 예능을 취향에 맞게 추천해드려요
+            </div>
+
         </div>
-        <div class="hero-subtitle">
-            영화, 드라마, 예능을 취향에 맞게 추천해드려요.
-        </div>
-        <div class="hero-description">
-            장르, 배우, 러닝타임처럼 정확한 조건부터<br>
-            통쾌한 작품, 편하게 볼 작품 같은 분위기까지 자연스럽게 입력해보세요.
-        </div>
-    </div>
-    """)
+        """
+    )
 
 
     # --------------------------------------------------
@@ -659,34 +882,200 @@ if is_new_chat:
 # ==================================================
 # 8. 대화 진행 중 CHAT SCREEN
 # ==================================================
-
 else:
+
+    # ==================================================
+    # 두 번째 화면 전용 크기 조정
+    # ==================================================
+
+    st.markdown(
+        """
+        <style>
+
+        /* 두 번째 화면 전체 폭/여백 */
+        .block-container {
+            max-width: 1100px;
+            padding-top: 1.5rem;
+            padding-bottom: 5rem;
+        }
+
+
+        /* 상단 로고 */
+        .chat-logo-image {
+            width: 100px;
+        }
+
+        .chat-brand {
+            min-height: 40px;
+        }
+
+        .chat-divider {
+            margin-top: 8px;
+            margin-bottom: 12px;
+        }
+
+
+        /* 사용자 질문 */
+        .user-row {
+            margin-top: 8px;
+            margin-bottom: 14px;
+        }
+
+        .user-bubble {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            flex-basis: 38px;
+        }
+
+
+        /* AI 답변 */
+        .assistant-row {
+            margin-top: 5px;
+            margin-bottom: 12px;
+        }
+
+        .assistant-avatar {
+            width: 40px;
+            height: 40px;
+            flex-basis: 40px;
+        }
+
+        .assistant-avatar img {
+            width: 24px;
+            height: 31px;
+        }
+
+        .assistant-bubble {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+
+        /* 추천 카드 */
+        .recommendation-card {
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        /* 포스터만 특히 작게 */
+        .recommendation-poster {
+            width: 62%;
+            max-width: 210px;
+
+            aspect-ratio: 2 / 3;
+
+            margin: 12px auto 0 auto;
+
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+
+        /* 카드 정보 */
+        .recommendation-info {
+            flex: 1;
+
+            padding: 10px 14px 14px 14px;
+        }
+
+        .recommendation-title {
+            font-size: 16px;
+        }
+
+        .recommendation-meta {
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .recommendation-rating {
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .recommendation-overview {
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .tmdb-note {
+            margin-top: 8px;
+            font-size: 10px;
+        }
+
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
     # --------------------------------------------------
     # 상단 Header
     # --------------------------------------------------
 
     header_left, header_right = st.columns(
-        [5, 1.1],
+        [5, 1.35],
         vertical_alignment="center"
     )
 
+
     with header_left:
 
-        st.markdown(
-            """
-<div class="chat-brand">
-    <div class="netflix-logo-small">NETFLIX</div>
-    <div class="ai-label">AI RECOMMENDATION</div>
-</div>
-""",
-            unsafe_allow_html=True
-        )
+        if logo_base64:
+
+            st.html(
+                f"""
+                <div class="chat-brand">
+
+                    <img
+                        class="chat-logo-image"
+                        src="data:image/png;base64,{logo_base64}"
+                        alt="Netflix"
+                    >
+
+                    <div class="chat-ai-label">
+                        AI RECOMMENDATION
+                    </div>
+
+                </div>
+                """
+            )
+
+        else:
+
+            st.html(
+                """
+                <div class="chat-brand">
+
+                    <div
+                        style="
+                            color:#E50914;
+                            font-size:28px;
+                            font-weight:900;
+                        "
+                    >
+                        NETFLIX
+                    </div>
+
+                    <div class="chat-ai-label">
+                        AI RECOMMENDATION
+                    </div>
+
+                </div>
+                """
+            )
+
 
     with header_right:
 
         if st.button(
-            "새 대화",
+            "＋ 새 대화 시작",
             use_container_width=True
         ):
 
@@ -695,9 +1084,8 @@ else:
             st.rerun()
 
 
-    st.markdown(
-        '<div class="chat-divider"></div>',
-        unsafe_allow_html=True
+    st.html(
+        '<div class="chat-divider"></div>'
     )
 
 
@@ -707,19 +1095,132 @@ else:
 
     for message in st.session_state.messages:
 
-        with st.chat_message(
-            message["role"]
-        ):
+        role = message["role"]
 
-            st.write(
+        safe_content = html.escape(
+            str(
                 message["content"]
+            )
+        )
+
+
+        # --------------------------------------------------
+        # USER
+        # --------------------------------------------------
+
+        if role == "user":
+
+            st.html(
+                f"""
+                <div class="user-row">
+
+                    <div class="user-bubble">
+                        {safe_content}
+                    </div>
+
+                    <div class="user-avatar">
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="4"
+                            />
+
+                            <path
+                                d="
+                                    M4 21
+                                    C4 16.6 7.6 13 12 13
+                                    C16.4 13 20 16.6 20 21
+                                    Z
+                                "
+                            />
+
+                        </svg>
+
+                    </div>
+
+                </div>
+                """
             )
 
 
-            # Assistant 추천 결과가 있는 경우
+        # --------------------------------------------------
+        # ASSISTANT
+        # --------------------------------------------------
+
+        else:
+
+            if symbol_base64:
+
+                assistant_avatar = f"""
+                    <img
+                        src="data:image/png;base64,{symbol_base64}"
+                        alt="Netflix AI"
+                    >
+                """
+
+            else:
+
+                assistant_avatar = """
+                    <span
+                        style="
+                            color:#E50914;
+                            font-size:28px;
+                            font-weight:900;
+                        "
+                    >
+                        N
+                    </span>
+                """
+
+
+            st.html(
+                f"""
+                <div class="assistant-row">
+
+                    <div class="assistant-avatar">
+                        {assistant_avatar}
+                    </div>
+
+                    <div class="assistant-bubble">
+                        {safe_content}
+                    </div>
+
+                </div>
+                """
+            )
+
+
+            # --------------------------------------------------
+            # 추천 결과가 있는 Assistant 메시지
+            # --------------------------------------------------
+
             if "results" in message:
 
-                for row in message["results"]:
+                results = message["results"]
+
+                # Top 3 → 가로 3열
+                card_columns = st.columns(
+                    len(results),
+                    gap="medium"
+                )
+
+
+                for rank, (
+                    column,
+                    row
+                ) in enumerate(
+                    zip(
+                        card_columns,
+                        results
+                    ),
+                    start=1
+                ):
 
                     (
                         content_id,
@@ -735,75 +1236,208 @@ else:
                     ) = row
 
 
-                    # DB 콘텐츠 유형 → 사용자 표시용 한글
+                    # 콘텐츠 유형
                     display_type = type_map.get(
                         content_type,
                         content_type
                     )
 
 
-                    # Action, Comedy
-                    # →
-                    # Action · Comedy
+                    # 장르
                     if genres:
 
-                        display_genres = genres.replace(
-                            ",",
-                            " ·"
+                        display_genres = (
+                            genres.replace(
+                                ",",
+                                " ·"
+                            )
                         )
 
                     else:
 
-                        display_genres = "장르 정보 없음"
-
-
-                    # ----------------------------------
-                    # 추천 콘텐츠 카드
-                    # ----------------------------------
-
-                    with st.container(
-                        border=True
-                    ):
-
-                        poster_col, info_col = st.columns(
-                            [1, 3],
-                            vertical_alignment="top"
+                        display_genres = (
+                            "장르 정보 없음"
                         )
 
-                        with poster_col:
-                            if poster_path:
-                                poster_url = (
-                                    "https://image.tmdb.org/t/p/w500"
-                                    + poster_path
-                                )
-                                st.image(
-                                    poster_url,
-                                    width="stretch"
-                                )
 
-                        with info_col:
+                    # 공개연도
+                    if release_date:
 
-                            rating_text = (
-                                f"⭐ {vote_average}"
-                                if vote_average else ""
+                        release_year = (
+                            release_date.year
+                        )
+
+                    else:
+
+                        release_year = "연도 정보 없음"
+
+
+                    # 평점
+                    if vote_average is not None:
+
+                        rating_text = (
+                            f"{float(vote_average):.1f}"
+                        )
+
+                    else:
+
+                        rating_text = "-"
+
+
+                    # 너무 긴 줄거리 때문에
+                    # 카드 높이가 과도하게 달라지는 것 방지
+                    if overview:
+
+                        clean_overview = (
+                            str(overview).strip()
+                        )
+
+                        if len(clean_overview) > 95:
+
+                            clean_overview = (
+                                clean_overview[:95]
+                                + "..."
                             )
 
-                            st.markdown(
-                                f'<div class="rec-title">{title}</div>',
-                                unsafe_allow_html=True
-                            )
+                    else:
 
-                            st.caption(
-                                f"{display_type} · "
-                                f"{runtime}분 · "
-                                f"{display_genres}"
-                                f" · {rating_text}"
-                            )
+                        clean_overview = (
+                            "줄거리 정보가 없습니다."
+                        )
 
-                            st.markdown(
-                                f'<div class="rec-overview">{overview}</div>',
-                                unsafe_allow_html=True
-                            )
+
+                    # HTML 안전 처리
+                    safe_title = html.escape(
+                        str(title)
+                    )
+
+                    safe_type = html.escape(
+                        str(display_type)
+                    )
+
+                    safe_genres = html.escape(
+                        str(display_genres)
+                    )
+
+                    safe_overview = html.escape(
+                        clean_overview
+                    )
+
+
+                    # TMDB 포스터
+                    if poster_path:
+
+                        poster_url = (
+                            "https://image.tmdb.org/t/p/w500"
+                            + poster_path
+                        )
+
+                    else:
+
+                        poster_url = ""
+
+
+                    with column:
+
+                        if poster_url:
+
+                            poster_html = f"""
+                                <img
+                                    class="recommendation-poster"
+                                    src="{poster_url}"
+                                    alt="{safe_title}"
+                                >
+                            """
+
+                        else:
+
+                            poster_html = """
+                                <div
+                                    class="recommendation-poster"
+                                    style="
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        color:#777777;
+                                    "
+                                >
+                                    포스터 없음
+                                </div>
+                            """
+
+
+                        st.html(
+                            f"""
+                            <div class="recommendation-card">
+
+                                {poster_html}
+
+                                <div class="recommendation-info">
+
+                                    <div
+                                        class="recommendation-title-row"
+                                    >
+
+                                        <span class="rank-badge">
+                                            {rank}
+                                        </span>
+
+                                        <span
+                                            class="recommendation-title"
+                                        >
+                                            {safe_title}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div
+                                        class="recommendation-meta"
+                                    >
+                                        {release_year}
+                                        ·
+                                        {runtime}분
+                                        ·
+                                        {safe_type}
+                                        ·
+                                        {safe_genres}
+                                    </div>
+
+
+                                    <div
+                                        class="recommendation-rating"
+                                    >
+
+                                        <span class="rating-star">
+                                            ★
+                                        </span>
+
+                                        {rating_text}
+
+                                    </div>
+
+
+                                    <div
+                                        class="recommendation-overview"
+                                    >
+                                        {safe_overview}
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            """
+                        )
+
+
+                st.html(
+                    """
+                    <div class="tmdb-note">
+                        ※ 평점은 TMDB 기준이며
+                        변동될 수 있습니다.
+                    </div>
+                    """
+                )
 
 
     # ==================================================
@@ -815,7 +1449,6 @@ else:
     )
 
 
-    # 새 질문이 들어오면
     if user_query:
 
         user_query = user_query.strip()

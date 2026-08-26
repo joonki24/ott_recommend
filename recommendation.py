@@ -30,7 +30,7 @@ embedding_dimensions = 1024
 # --------------------------------------------------
 
 conn = psycopg.connect(
-    host="localhost",
+    host=os.getenv("PGHOST", "localhost"),
     port=DB_PORT,
     dbname=DB_NAME,
     user="postgres",
@@ -498,7 +498,6 @@ def recommend(user_query, top_n=3):
 
     return vector_results[:top_n]
 
-
 # --------------------------------------------------
 # 직접 실행했을 때만 테스트
 # Streamlit에서 import할 때는 실행되지 않음
@@ -506,9 +505,7 @@ def recommend(user_query, top_n=3):
 
 if __name__ == "__main__":
 
-    user_query = (
-        "송강호 배우 나온 영화 추천해줘"
-    )
+    user_query = "송강호 배우 나온 영화 추천해줘"
 
     results = recommend(
         user_query,

@@ -391,7 +391,7 @@ st.markdown(
         margin-bottom: 10px !important;
     }}
 
-    [data-testid="stVerticalBlockBorderWrapper"] h3 {{
+    .rec-title {{
         color: #ffffff !important;
 
         font-size: 20px !important;
@@ -400,7 +400,7 @@ st.markdown(
         margin-bottom: 4px !important;
     }}
 
-    [data-testid="stVerticalBlockBorderWrapper"] p {{
+    .rec-overview {{
         color: #e2e2e2 !important;
 
         font-size: 14px !important;
@@ -788,8 +788,9 @@ else:
                                 if vote_average else ""
                             )
 
-                            st.subheader(
-                                title
+                            st.markdown(
+                                f'<div class="rec-title">{title}</div>',
+                                unsafe_allow_html=True
                             )
 
                             st.caption(
@@ -799,8 +800,9 @@ else:
                                 f" · {rating_text}"
                             )
 
-                            st.write(
-                                overview
+                            st.markdown(
+                                f'<div class="rec-overview">{overview}</div>',
+                                unsafe_allow_html=True
                             )
 
 
